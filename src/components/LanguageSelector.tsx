@@ -34,6 +34,11 @@ const LanguageSelector: React.FC<LanguageSelectorProps> = ({
               style={{ backgroundColor: language.color }}
             />
             {language.name}
+            {language.previewSupported && (
+              <span className="ml-1.5 text-xs bg-green-500/20 text-green-600 px-1 py-0.5 rounded">
+                Preview
+              </span>
+            )}
           </button>
         ))}
       </div>

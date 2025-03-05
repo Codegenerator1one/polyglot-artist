@@ -2,16 +2,36 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Loader2, Wand2, RefreshCw, Sparkles } from 'lucide-react';
+import { Loader2, Wand2, RefreshCw, Sparkles, Sliders } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
+import { AIModel, supportedAIModels } from '../services/aiService';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Slider } from "@/components/ui/slider";
 
 interface AIControlsProps {
   isGenerating: boolean;
-  onGenerate: (prompt: string) => void;
+  onGenerate: (prompt: string, model: string, temperature: number, maxLength: number) => void;
+  selectedModel: AIModel;
+  setSelectedModel: (model: AIModel) => void;
 }
 
-const AIControls: React.FC<AIControlsProps> = ({ isGenerating, onGenerate }) => {
+const AIControls: React.FC<AIControlsProps> = ({ 
+  isGenerating, 
+  onGenerate, 
+  selectedModel,
+  setSelectedModel 
+}) => {
   const [prompt, setPrompt] = useState('');
+  const [showAdvanced, setShowAdvanced] = useState(false);
+  const [temperature, setTemperature] = useState(0.2); // 0-1, lower = more deterministic
+  const [maxLength, setMaxLength] = useState(8192); // max tokens/length
   const { toast } = useToast();
 
   const handleGenerate = () => {
@@ -24,7 +44,7 @@ const AIControls: React.FC<AIControlsProps> = ({ isGenerating, onGenerate }) => 
       return;
     }
     
-    onGenerate(prompt);
+    onGenerate(prompt, selectedModel.id, temperature, maxLength);
   };
 
   const suggestionPrompts = [
@@ -41,28 +61,63 @@ const AIControls: React.FC<AIControlsProps> = ({ isGenerating, onGenerate }) => 
       <Textarea
         value={prompt}
         onChange={(e) => setPrompt(e.target.value)}
-        placeholder="Describe the code you want to generate..."
+        placeholder="Describe the code you want to generate in detail..."
         className="min-h-[100px] resize-none bg-background border-border/50 focus:border-primary/30 transition-all duration-200"
       />
       
       <div className="flex justify-between items-center">
-        <Button
-          onClick={handleGenerate}
-          disabled={isGenerating || !prompt.trim()}
-          className="bg-primary text-primary-foreground hover:bg-primary/90 transition-all duration-200"
-        >
-          {isGenerating ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Generating...
-            </>
-          ) : (
-            <>
-              <Wand2 className="mr-2 h-4 w-4" />
-              Generate Code
-            </>
-          )}
-        </Button>
+        <div className="flex space-x-2">
+          <Button
+            onClick={handleGenerate}
+            disabled={isGenerating || !prompt.trim()}
+            className="bg-primary text-primary-foreground hover:bg-primary/90 transition-all duration-200"
+          >
+            {isGenerating ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Generating...
+              </>
+            ) : (
+              <>
+                <Wand2 className="mr-2 h-4 w-4" />
+                Generate Code
+              </>
+            )}
+          </Button>
+          
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" className="border-border/50 hover:bg-accent/50 transition-all duration-200">
+                {selectedModel.name} <span className="text-xs opacity-60 ml-1">↓</span>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start">
+              <DropdownMenuLabel>AI Models</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              {supportedAIModels.map((model) => (
+                <DropdownMenuItem 
+                  key={model.id} 
+                  onClick={() => setSelectedModel(model)}
+                  className={selectedModel.id === model.id ? "bg-accent/50" : ""}
+                >
+                  <div className="flex flex-col">
+                    <span>{model.name}</span>
+                    <span className="text-xs text-muted-foreground">{model.provider}</span>
+                  </div>
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+          
+          <Button
+            variant="outline"
+            onClick={() => setShowAdvanced(!showAdvanced)}
+            className="border-border/50 hover:bg-accent/50 transition-all duration-200"
+          >
+            <Sliders className="h-4 w-4" />
+          </Button>
+        </div>
+        
         <Button
           variant="outline"
           onClick={() => setPrompt('')}
@@ -72,6 +127,45 @@ const AIControls: React.FC<AIControlsProps> = ({ isGenerating, onGenerate }) => 
           <RefreshCw className="h-4 w-4" />
         </Button>
       </div>
+      
+      {showAdvanced && (
+        <div className="bg-accent/20 p-4 rounded-md border border-border/30 space-y-4">
+          <div>
+            <div className="flex justify-between mb-2">
+              <label className="text-sm">Temperature: {temperature.toFixed(1)}</label>
+              <span className="text-xs text-muted-foreground">
+                {temperature < 0.3 ? 'More precise' : temperature > 0.7 ? 'More creative' : 'Balanced'}
+              </span>
+            </div>
+            <Slider
+              value={[temperature]}
+              min={0}
+              max={1}
+              step={0.1}
+              onValueChange={(vals) => setTemperature(vals[0])}
+              disabled={isGenerating}
+            />
+          </div>
+          
+          <div>
+            <div className="flex justify-between mb-2">
+              <label className="text-sm">Maximum Length: {maxLength}</label>
+            </div>
+            <Slider
+              value={[maxLength]}
+              min={1024}
+              max={16384}
+              step={1024}
+              onValueChange={(vals) => setMaxLength(vals[0])}
+              disabled={isGenerating}
+            />
+            <div className="flex justify-between mt-1">
+              <span className="text-xs text-muted-foreground">Shorter</span>
+              <span className="text-xs text-muted-foreground">Longer</span>
+            </div>
+          </div>
+        </div>
+      )}
       
       <div className="space-y-2">
         <div className="text-xs text-muted-foreground">Suggestions</div>
