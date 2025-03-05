@@ -31,10 +31,9 @@ const ModelSelector: React.FC<ModelSelectorProps> = ({
             )}
             onClick={() => onSelectModel(model)}
           >
-            <div className="flex items-center w-full">
+            <div className="flex items-center w-full justify-center">
               <span className="font-medium">{model.name}</span>
             </div>
-            <span className="text-xs text-muted-foreground mt-1">{model.provider}</span>
           </button>
         ))}
       </div>

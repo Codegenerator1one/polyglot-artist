@@ -9,7 +9,7 @@ export interface AIModel {
 export const supportedAIModels: AIModel[] = [
   {
     id: "gemini",
-    name: "Gemini 1.5 Flash",
+    name: "Gemini",
     provider: "Google",
     description: "Fast and efficient code generation with Google's Gemini model"
   },
@@ -58,7 +58,13 @@ const OPENAI_API_KEY = ""; // This should be handled securely
 const generateWithGemini = async (request: CodeGenerationRequest): Promise<CodeGenerationResponse> => {
   try {
     // Construct a prompt that instructs the model to generate code with detailed comments
-    const systemPrompt = `You are an expert code generation assistant. Generate detailed, well-commented code for the following request. The code should be in ${request.language}. Don't skimp on implementation details - provide the most complete implementation possible.`;
+    const systemPrompt = `You are an expert code generation assistant. 
+    Generate detailed, well-commented, complete and working code for the following request.
+    The code should be in ${request.language}. 
+    Make sure to include ALL necessary imports, dependencies, and implementation details.
+    Do not skip any implementation details.
+    Provide the MOST COMPLETE implementation possible.
+    Return ONLY the code without any explanations before or after.`;
     
     const userPrompt = `${request.prompt}${request.context ? "\n\nContext: " + request.context : ""}`;
 

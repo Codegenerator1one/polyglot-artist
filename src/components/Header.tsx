@@ -10,16 +10,8 @@ const Header: React.FC = () => {
         <h1 className="text-xl font-medium">CodeGenius</h1>
       </div>
       <div className="flex items-center space-x-3">
-        <div className="flex items-center space-x-2">
-          <div className="text-xs bg-accent/50 text-accent-foreground px-2 py-0.5 rounded-full">
-            Powered by Gemini
-          </div>
-          <div className="text-xs bg-accent/50 text-accent-foreground px-2 py-0.5 rounded-full">
-            OpenAI
-          </div>
-          <div className="text-xs bg-accent/50 text-accent-foreground px-2 py-0.5 rounded-full">
-            Claude
-          </div>
+        <div className="text-xs bg-accent/50 text-accent-foreground px-2 py-0.5 rounded-full">
+          AI-Powered Code Generation
         </div>
       </div>
     </header>
