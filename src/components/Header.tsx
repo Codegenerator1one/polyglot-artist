@@ -11,7 +11,7 @@ const Header: React.FC = () => {
       </div>
       <div className="flex items-center space-x-3">
         <div className="text-xs bg-accent/50 text-accent-foreground px-2 py-0.5 rounded-full">
-          AI-Powered Code Generation
+          Powered by Gemini
         </div>
       </div>
     </header>

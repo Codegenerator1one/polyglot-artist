@@ -39,7 +39,7 @@ export const supportedLanguages: Language[] = [
     extension: "ts",
     mode: "text/typescript",
     color: "#007acc",
-    previewSupported: true
+    previewSupported: false
   },
   {
     id: "jsx",
@@ -47,7 +47,7 @@ export const supportedLanguages: Language[] = [
     extension: "jsx",
     mode: "jsx",
     color: "#61dafb",
-    previewSupported: true
+    previewSupported: false
   },
   {
     id: "tsx",
@@ -55,7 +55,7 @@ export const supportedLanguages: Language[] = [
     extension: "tsx",
     mode: "text/typescript-jsx",
     color: "#007acc",
-    previewSupported: true
+    previewSupported: false
   },
   {
     id: "python",
@@ -63,7 +63,7 @@ export const supportedLanguages: Language[] = [
     extension: "py",
     mode: "python",
     color: "#3572A5",
-    previewSupported: true
+    previewSupported: false
   },
   {
     id: "java",
@@ -71,7 +71,7 @@ export const supportedLanguages: Language[] = [
     extension: "java",
     mode: "text/x-java",
     color: "#b07219",
-    previewSupported: true
+    previewSupported: false
   },
   {
     id: "kotlin",
@@ -79,7 +79,7 @@ export const supportedLanguages: Language[] = [
     extension: "kt",
     mode: "text/x-kotlin",
     color: "#A97BFF",
-    previewSupported: true
+    previewSupported: false
   },
   {
     id: "swift",
@@ -87,7 +87,7 @@ export const supportedLanguages: Language[] = [
     extension: "swift",
     mode: "swift",
     color: "#F05138",
-    previewSupported: true
+    previewSupported: false
   },
   {
     id: "c",
@@ -95,7 +95,7 @@ export const supportedLanguages: Language[] = [
     extension: "c",
     mode: "text/x-csrc",
     color: "#555555",
-    previewSupported: true
+    previewSupported: false
   },
   {
     id: "cpp",
@@ -103,7 +103,7 @@ export const supportedLanguages: Language[] = [
     extension: "cpp",
     mode: "text/x-c++src",
     color: "#f34b7d",
-    previewSupported: true
+    previewSupported: false
   },
   {
     id: "csharp",
@@ -111,7 +111,7 @@ export const supportedLanguages: Language[] = [
     extension: "cs",
     mode: "text/x-csharp",
     color: "#178600",
-    previewSupported: true
+    previewSupported: false
   },
   {
     id: "go",
@@ -119,7 +119,7 @@ export const supportedLanguages: Language[] = [
     extension: "go",
     mode: "text/x-go",
     color: "#00ADD8",
-    previewSupported: true
+    previewSupported: false
   },
   {
     id: "rust",
@@ -127,7 +127,7 @@ export const supportedLanguages: Language[] = [
     extension: "rs",
     mode: "rust",
     color: "#DEA584",
-    previewSupported: true
+    previewSupported: false
   },
   {
     id: "dart",
@@ -135,7 +135,7 @@ export const supportedLanguages: Language[] = [
     extension: "dart",
     mode: "dart",
     color: "#00B4AB",
-    previewSupported: true
+    previewSupported: false
   },
   {
     id: "php",
@@ -143,7 +143,7 @@ export const supportedLanguages: Language[] = [
     extension: "php",
     mode: "php",
     color: "#4F5D95",
-    previewSupported: true
+    previewSupported: false
   },
   {
     id: "ruby",
@@ -151,7 +151,7 @@ export const supportedLanguages: Language[] = [
     extension: "rb",
     mode: "ruby",
     color: "#701516",
-    previewSupported: true
+    previewSupported: false
   },
   {
     id: "sql",
@@ -159,7 +159,7 @@ export const supportedLanguages: Language[] = [
     extension: "sql",
     mode: "sql",
     color: "#e38c00",
-    previewSupported: true
+    previewSupported: false
   },
   {
     id: "markdown",
