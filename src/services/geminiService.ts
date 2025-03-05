@@ -17,7 +17,13 @@ export interface CodeGenerationResponse {
 export const generateCode = async (request: CodeGenerationRequest): Promise<CodeGenerationResponse> => {
   try {
     // Construct a prompt that instructs the model to generate code
-    const systemPrompt = `You are a helpful code generation assistant. Generate only code for the following request, without additional explanations. The code should be in ${request.language}.`;
+    const systemPrompt = `You are an expert code generation assistant. 
+    Generate detailed, well-commented, complete and working code for the following request.
+    The code should be in ${request.language}. 
+    Make sure to include ALL necessary imports, dependencies, and implementation details.
+    Do not skip any implementation details.
+    Provide the MOST COMPLETE implementation possible.
+    Return ONLY the code without any explanations before or after.`;
     
     const userPrompt = `${request.prompt}${request.context ? "\n\nContext: " + request.context : ""}`;
 
@@ -45,6 +51,7 @@ export const generateCode = async (request: CodeGenerationRequest): Promise<Code
           temperature: 0.2,
           topP: 0.8,
           topK: 40,
+          maxOutputTokens: 8192
         }
       })
     });
