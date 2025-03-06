@@ -1,6 +1,5 @@
 
 import React, { useRef } from 'react';
-import { cn } from '@/lib/utils';
 
 interface PreviewIframeProps {
   html: string;

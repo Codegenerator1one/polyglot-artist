@@ -1,5 +1,5 @@
 
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Language } from '../utils/supportedLanguages';
 import PreviewHeader from './preview/PreviewHeader';
 import PreviewIframe from './preview/PreviewIframe';
@@ -14,7 +14,6 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({ code, language }) => {
   const [html, setHtml] = useState('');
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [embedUrl, setEmbedUrl] = useState<string | null>(null);
-  const iframeRef = useRef<HTMLIFrameElement>(null);
 
   useEffect(() => {
     if (!code) {

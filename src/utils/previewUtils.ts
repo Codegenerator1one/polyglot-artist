@@ -1,6 +1,4 @@
 
-import { Language } from '../utils/supportedLanguages';
-
 /**
  * Generates HTML content for previewing different types of code
  */
