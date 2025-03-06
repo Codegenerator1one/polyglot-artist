@@ -1,5 +1,5 @@
 
-import React, { useRef } from 'react';
+import React, { useRef, useEffect } from 'react';
 
 interface PreviewIframeProps {
   html: string;
@@ -16,14 +16,24 @@ const PreviewIframe: React.FC<PreviewIframeProps> = ({
 }) => {
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
+  useEffect(() => {
+    // Force the iframe to update when content changes
+    if (iframeRef.current) {
+      if (embedUrl) {
+        iframeRef.current.src = embedUrl;
+      } else if (html) {
+        const iframe = iframeRef.current;
+        iframe.srcdoc = html;
+      }
+    }
+  }, [html, embedUrl, isRefreshing]);
+
   return (
     <div className="h-[400px]">
       <iframe
         ref={iframeRef}
         title="Preview"
         className="w-full h-full border-none"
-        src={embedUrl || undefined}
-        srcDoc={embedUrl ? undefined : html}
         sandbox="allow-scripts allow-same-origin allow-forms allow-modals allow-popups"
       />
     </div>

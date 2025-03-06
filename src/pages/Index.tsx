@@ -10,13 +10,12 @@ import { supportedLanguages, getLanguageById } from '@/utils/supportedLanguages'
 import { generateCode } from '@/services/geminiService';
 import { useToast } from '@/components/ui/use-toast';
 import { Separator } from '@/components/ui/separator';
-import { useAuth } from '@clerk/clerk-react';
 
 const Index = () => {
   const [selectedLanguage, setSelectedLanguage] = useState(getLanguageById('html'));
   const [code, setCode] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
-  const { isSignedIn } = useAuth();
+  const [isSignedIn, setIsSignedIn] = useState(false);
   const { toast } = useToast();
 
   // Check if we're coming from the "Edit Project" action

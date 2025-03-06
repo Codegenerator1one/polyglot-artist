@@ -12,16 +12,24 @@ import NotFound from "./pages/NotFound";
 const queryClient = new QueryClient();
 
 const App = () => {
-  const [isClerkLoaded, setIsClerkLoaded] = useState(false);
+  const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
-    // Simulate Clerk loading to prevent errors if Clerk key is missing
+    // Simulate loading to ensure components mount properly
     const timer = setTimeout(() => {
-      setIsClerkLoaded(true);
+      setIsLoaded(true);
     }, 100);
     
     return () => clearTimeout(timer);
   }, []);
+
+  if (!isLoaded) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <p>Loading application...</p>
+      </div>
+    );
+  }
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -29,18 +37,11 @@ const App = () => {
         <Toaster />
         <Sonner />
         <BrowserRouter>
-          {!isClerkLoaded ? (
-            <div className="flex items-center justify-center h-screen">
-              Loading authentication...
-            </div>
-          ) : (
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/my-projects" element={<MyProjects />} />
-              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          )}
+          <Routes>
+            <Route path="/" element={<Index />} />
+            <Route path="/my-projects" element={<MyProjects />} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
         </BrowserRouter>
       </TooltipProvider>
     </QueryClientProvider>
