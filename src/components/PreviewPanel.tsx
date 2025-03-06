@@ -132,16 +132,16 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({ code, language }) => {
       // Choose platform based on language
       if (['python', 'java', 'c', 'cpp', 'csharp', 'go', 'rust'].includes(language.id)) {
         // Use Replit for these languages
-        const replitTemplate = language.id === 'python' ? 'python' : 
-                             language.id === 'java' ? 'java' :
+        const replitTemplate = language.id === 'python' ? 'python-3' : 
+                             language.id === 'java' ? 'java-lts' :
                              language.id === 'c' ? 'c' :
                              language.id === 'cpp' ? 'cpp' :
                              language.id === 'csharp' ? 'csharp' :
                              language.id === 'go' ? 'go' : 'rust';
                              
-        // Encode the code for the URL
-        const encodedCode = encodeURIComponent(code);
-        embedSrc = `https://replit.com/@replit/${replitTemplate}?lite=true&outputonly=1#main.${language.extension}`;
+        // Create a Base64 encoded version of the code for Replit
+        const encodedCode = btoa(encodeURIComponent(code));
+        embedSrc = `https://replit.com/@replit/${replitTemplate}?embed=true&code=${encodedCode}`;
       } else if (['typescript', 'jsx', 'tsx'].includes(language.id)) {
         // Use Stackblitz for TypeScript and React
         const project = {
@@ -176,9 +176,9 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({ code, language }) => {
                              language.id === 'kotlin' ? 'kotlin' :
                              language.id === 'dart' ? 'dart' : 'sqlite';
                              
-        // Encode the code for the URL
-        const encodedCode = encodeURIComponent(code);
-        embedSrc = `https://replit.com/@replit/${replitTemplate}?lite=true&outputonly=1#main.${language.extension}`;
+        // Create a Base64 encoded version of the code for Replit
+        const encodedCode = btoa(encodeURIComponent(code));
+        embedSrc = `https://replit.com/@replit/${replitTemplate}?embed=true&code=${encodedCode}`;
       }
       
       setEmbedUrl(embedSrc);
