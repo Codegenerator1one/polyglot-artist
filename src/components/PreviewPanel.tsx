@@ -12,9 +12,9 @@ interface PreviewPanelProps {
 
 const PreviewPanel: React.FC<PreviewPanelProps> = ({ code, language }) => {
   const [html, setHtml] = useState('');
-  const iframeRef = useRef<HTMLIFrameElement>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [embedUrl, setEmbedUrl] = useState<string | null>(null);
+  const iframeRef = useRef<HTMLIFrameElement>(null);
 
   useEffect(() => {
     if (!code) {
@@ -36,23 +36,18 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({ code, language }) => {
   }, [code, language]);
 
   const handleRefresh = () => {
-    if (!iframeRef.current || (!html && !embedUrl)) return;
-    
     setIsRefreshing(true);
     
-    // Force refresh the iframe
-    const iframe = iframeRef.current;
-    iframe.src = 'about:blank';
-    
     setTimeout(() => {
-      if (iframe.contentWindow) {
-        if (html) {
-          iframe.contentWindow.document.open();
-          iframe.contentWindow.document.write(html);
-          iframe.contentWindow.document.close();
-        } else if (embedUrl) {
-          iframe.src = embedUrl;
-        }
+      // Re-trigger the preview generation to force refresh
+      if (['html', 'css', 'javascript', 'markdown'].includes(language.id)) {
+        setHtml(generatePreviewHTML(code, language.id));
+      } else {
+        // For external embeds, we'll recreate the URL to force refresh
+        setEmbedUrl(null);
+        setTimeout(() => {
+          setEmbedUrl(generateEmbedUrl(code, language.id));
+        }, 50);
       }
       setIsRefreshing(false);
     }, 100);
