@@ -5,7 +5,6 @@ import LanguageSelector from '@/components/LanguageSelector';
 import CodeEditor from '@/components/CodeEditor';
 import PreviewPanel from '@/components/PreviewPanel';
 import AIControls from '@/components/AIControls';
-import SaveProjectDialog from '@/components/SaveProjectDialog';
 import { supportedLanguages, getLanguageById } from '@/utils/supportedLanguages';
 import { generateCode } from '@/services/geminiService';
 import { useToast } from '@/components/ui/use-toast';
@@ -15,32 +14,7 @@ const Index = () => {
   const [selectedLanguage, setSelectedLanguage] = useState(getLanguageById('html'));
   const [code, setCode] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
-  const [isSignedIn, setIsSignedIn] = useState(false);
   const { toast } = useToast();
-
-  // Check if we're coming from the "Edit Project" action
-  useEffect(() => {
-    const savedCode = localStorage.getItem('editing_project_code');
-    const savedLanguage = localStorage.getItem('editing_project_language');
-    
-    if (savedCode && savedLanguage) {
-      setCode(savedCode);
-      try {
-        setSelectedLanguage(getLanguageById(savedLanguage));
-      } catch (e) {
-        console.error("Language not found:", savedLanguage);
-      }
-      
-      // Clear the temporary storage
-      localStorage.removeItem('editing_project_code');
-      localStorage.removeItem('editing_project_language');
-      
-      toast({
-        title: "Project Loaded",
-        description: "Your project has been loaded for editing.",
-      });
-    }
-  }, [toast]);
 
   const handleLanguageSelect = (language: typeof selectedLanguage) => {
     setSelectedLanguage(language);
@@ -90,20 +64,11 @@ const Index = () => {
       
       <main className="flex-1 container mx-auto py-6 px-4 space-y-8">
         <div className="space-y-8 max-w-7xl mx-auto">
-          <div className="flex items-center justify-between">
-            <div className="space-y-2">
-              <h2 className="text-2xl font-semibold tracking-tight animate-fade-in">AI Code Generator</h2>
-              <p className="text-muted-foreground animate-fade-in delay-100">
-                Generate code in multiple languages powered by Google Gemini AI
-              </p>
-            </div>
-            
-            {isSignedIn && (
-              <SaveProjectDialog 
-                currentLanguage={selectedLanguage.id}
-                currentCode={code}
-              />
-            )}
+          <div className="space-y-2">
+            <h2 className="text-2xl font-semibold tracking-tight animate-fade-in">AI Code Generator</h2>
+            <p className="text-muted-foreground animate-fade-in delay-100">
+              Generate code in multiple languages powered by Google Gemini AI
+            </p>
           </div>
           
           <Separator className="my-6" />
