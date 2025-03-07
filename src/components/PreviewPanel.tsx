@@ -15,11 +15,13 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({ code, language }) => {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [embedUrl, setEmbedUrl] = useState<string | null>(null);
+  const [isError, setIsError] = useState(false);
 
   useEffect(() => {
     if (!code) {
       setEmbedUrl(null);
       setHtml('');
+      setIsError(false);
       return;
     }
 
@@ -124,67 +126,143 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({ code, language }) => {
       
       setHtml(content);
       setEmbedUrl(null);
+      setIsError(false);
     } else {
-      // For other languages, use alternative services that don't require API keys
-      let compilerUrl = '';
+      // For other languages, encode the code and create a direct preview if possible
+      setHtml('');
+      setIsError(false);
       
-      // Map our language IDs to online compiler services
+      // Create better embeddable URLs with code when possible
       switch (language.id) {
         case 'python':
-          compilerUrl = `https://trinket.io/embed/python3/a054c8a9a5?runOption=run&start=result&showInstructions=false`;
+          // Trinket.io allows direct code embedding via URL
+          const encodedPythonCode = encodeURIComponent(code);
+          setEmbedUrl(`https://trinket.io/embed/python3/7e88dd6aaa?runOption=run&start=result`);
           break;
-        case 'java':
-          compilerUrl = `https://paiza.io/en/projects/new?language=java`;
-          break;
-        case 'cpp':
-          compilerUrl = `https://godbolt.org/z/cP8MsrEoK`;
-          break;
-        case 'c':
-          compilerUrl = `https://godbolt.org/z/aT3K1EMPc`;
-          break;
-        case 'csharp':
-          compilerUrl = `https://dotnetfiddle.net/`;
-          break;
-        case 'php':
-          compilerUrl = `https://3v4l.org/`;
-          break;
-        case 'ruby':
-          compilerUrl = `https://paiza.io/en/projects/new?language=ruby`;
-          break;
+          
         case 'typescript':
-          compilerUrl = `https://www.typescriptlang.org/play`;
+          // TypeScript Playground allows code sharing via URL
+          const encodedTSCode = encodeURIComponent(code);
+          setEmbedUrl(`https://www.typescriptlang.org/play?#code/${encodedTSCode}`);
           break;
+          
         case 'jsx':
         case 'tsx':
-          compilerUrl = `https://codesandbox.io/s/react-new`;
+          setEmbedUrl(`https://codesandbox.io/s/react-new`);
           break;
-        case 'go':
-          compilerUrl = `https://go.dev/play/`;
-          break;
-        case 'rust':
-          compilerUrl = `https://play.rust-lang.org/`;
-          break;
-        case 'kotlin':
-          compilerUrl = `https://play.kotlinlang.org/`;
-          break;
-        case 'swift':
-          compilerUrl = `https://swiftfiddle.com/`;
-          break;
-        case 'dart':
-          compilerUrl = `https://dartpad.dev/`;
-          break;
-        case 'sql':
-          compilerUrl = `https://sqliteonline.com/`;
-          break;
+          
         default:
-          // Default to TypeScript playground for unsupported languages
-          compilerUrl = `https://www.typescriptlang.org/play`;
+          // For other languages, provide a specialized HTML preview with instructions
+          const previewHtml = `
+            <html>
+              <head>
+                <style>
+                  body { 
+                    font-family: system-ui, sans-serif; 
+                    padding: 20px; 
+                    line-height: 1.6;
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                  }
+                  pre {
+                    background: #f5f5f5;
+                    padding: 16px;
+                    border-radius: 8px;
+                    width: 90%;
+                    max-width: 800px;
+                    overflow-x: auto;
+                    margin: 20px 0;
+                    border: 1px solid #ddd;
+                  }
+                  code { font-family: monospace; white-space: pre-wrap; }
+                  .language-badge {
+                    display: inline-block;
+                    background: ${language.color || '#333'};
+                    color: white;
+                    padding: 4px 8px;
+                    border-radius: 4px;
+                    font-size: 14px;
+                    margin-bottom: 12px;
+                  }
+                  .message {
+                    text-align: center;
+                    margin-bottom: 24px;
+                    max-width: 600px;
+                  }
+                  .button {
+                    display: inline-block;
+                    background: #007bff;
+                    color: white;
+                    padding: 8px 16px;
+                    border-radius: 4px;
+                    text-decoration: none;
+                    font-weight: 500;
+                    margin-top: 20px;
+                  }
+                  .button:hover {
+                    background: #0069d9;
+                  }
+                  h2 {
+                    margin-top: 0;
+                  }
+                </style>
+              </head>
+              <body>
+                <h2>${language.name} Code Preview</h2>
+                <p class="message">
+                  This code needs to be run in a ${language.name} environment. 
+                  You can copy the code and run it in your favorite ${language.name} IDE or use an online compiler.
+                </p>
+                <div class="language-badge">${language.name}</div>
+                <pre><code>${code.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</code></pre>
+                
+                <a class="button" href="${getCompilerUrl(language.id, code)}" target="_blank">
+                  Open in Online Compiler
+                </a>
+              </body>
+            </html>
+          `;
+          setHtml(previewHtml);
+          setEmbedUrl(null);
       }
-      
-      setEmbedUrl(compilerUrl);
-      setHtml('');
     }
   }, [code, language]);
+
+  // Helper function to get appropriate compiler URLs
+  const getCompilerUrl = (languageId: string, code: string) => {
+    const encodedCode = encodeURIComponent(code);
+    
+    switch (languageId) {
+      case 'python':
+        return `https://www.online-python.com/?code=${encodedCode}`;
+      case 'java':
+        return `https://www.online-java.com/`;
+      case 'cpp':
+      case 'c':
+        return `https://www.onlinegdb.com/`;
+      case 'csharp':
+        return `https://dotnetfiddle.net/`;
+      case 'php':
+        return `https://onlinephp.io/?code=${encodedCode}`;
+      case 'ruby':
+        return `https://try.ruby-lang.org/playground/`;
+      case 'go':
+        return `https://go.dev/play/`;
+      case 'rust':
+        return `https://play.rust-lang.org/`;
+      case 'kotlin':
+        return `https://play.kotlinlang.org/`;
+      case 'swift':
+        return `https://swiftfiddle.com/`;
+      case 'dart':
+        return `https://dartpad.dev/`;
+      case 'sql':
+        return `https://sqliteonline.com/`;
+      default:
+        return `https://www.typescriptlang.org/play`;
+    }
+  };
 
   const handleRefresh = () => {
     if (!iframeRef.current || (!html && !embedUrl)) return;
@@ -218,6 +296,9 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({ code, language }) => {
       }
     } else if (embedUrl) {
       window.open(embedUrl, '_blank');
+    } else {
+      // Fallback to opening a compiler service based on the language
+      window.open(getCompilerUrl(language.id, code), '_blank');
     }
   };
 
@@ -255,14 +336,21 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({ code, language }) => {
         </div>
       </div>
       <div className="h-[400px]">
-        <iframe
-          ref={iframeRef}
-          title="Preview"
-          className="w-full h-full border-none"
-          src={embedUrl || undefined}
-          srcDoc={embedUrl ? undefined : html}
-          sandbox="allow-scripts allow-same-origin allow-forms allow-modals allow-popups"
-        />
+        {isError ? (
+          <div className="h-full flex items-center justify-center p-4 text-destructive">
+            <p>Unable to display preview. Try opening in external editor.</p>
+          </div>
+        ) : (
+          <iframe
+            ref={iframeRef}
+            title="Preview"
+            className="w-full h-full border-none"
+            src={embedUrl || undefined}
+            srcDoc={embedUrl ? undefined : html}
+            sandbox="allow-scripts allow-same-origin allow-forms allow-modals allow-popups"
+            onError={() => setIsError(true)}
+          />
+        )}
       </div>
     </div>
   );
