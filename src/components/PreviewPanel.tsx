@@ -137,7 +137,7 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({ code, language }) => {
         setCompiledOutput('');
         setActiveTab('output');
       } else {
-        // For other languages, simulate a compilation result
+        // For other languages, simulate compilation result with advanced parsing
         setActiveTab('console');
         
         // Simulate compilation delay
@@ -170,143 +170,305 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({ code, language }) => {
     }
   };
 
-  // Simulate Python execution with basic output
+  // Enhanced Python execution simulation
   const simulatePythonExecution = (code: string) => {
     try {
-      // Basic simulation for common Python print statements
-      const printMatches = code.match(/print\((["'].*?["']|.*?)\)/g) || [];
+      let output = "[Python Interpreter]\n";
       
-      if (printMatches.length === 0) {
-        setCompiledOutput("[Python Interpreter]\nCode executed successfully with no output.");
-        return;
+      // Check for imports
+      if (code.includes("import ") || code.includes("from ")) {
+        output += "Imported modules successfully.\n";
       }
       
-      const output = printMatches.map(match => {
-        // Extract content inside print()
-        const content = match.substring(6, match.length - 1);
-        
-        // Handle string literals
-        if ((content.startsWith('"') && content.endsWith('"')) || 
-            (content.startsWith("'") && content.endsWith("'"))) {
-          return content.substring(1, content.length - 1);
-        }
-        
-        // For simple variables/expressions, just return placeholder
-        return `<simulated: ${content}>`;
-      }).join('\n');
+      // Detect and handle functions
+      const functionMatches = code.match(/def\s+([a-zA-Z_][a-zA-Z0-9_]*)\s*\(/g);
+      if (functionMatches && functionMatches.length > 0) {
+        output += `Defined ${functionMatches.length} function(s).\n`;
+      }
       
-      setCompiledOutput(`[Python Interpreter]\n${output}`);
+      // Detect classes
+      const classMatches = code.match(/class\s+([a-zA-Z_][a-zA-Z0-9_]*)/g);
+      if (classMatches && classMatches.length > 0) {
+        output += `Defined ${classMatches.length} class(es).\n`;
+      }
+      
+      // Process print statements with better regex
+      const printMatches = code.match(/print\s*\((.*?)\)/g) || [];
+      
+      if (printMatches.length > 0) {
+        output += "\nOutput:\n";
+        printMatches.forEach(match => {
+          // Extract content inside print()
+          const content = match.substring(match.indexOf('(') + 1, match.lastIndexOf(')'));
+          
+          // Handle string literals
+          if ((content.includes('"') || content.includes("'"))) {
+            // Extract the string content, handling both single and double quotes
+            const stringMatch = content.match(/(['"])(.*?)\1/) || content.match(/(['"])(.*?)(['"])/);
+            if (stringMatch) {
+              output += `${stringMatch[2]}\n`;
+            } else {
+              output += `${content}\n`;
+            }
+          } else {
+            // For non-string expressions
+            output += `${content} (simulated)\n`;
+          }
+        });
+      } else if (!functionMatches && !classMatches) {
+        output += "\nNo output. Check if your program includes print statements.";
+      }
+      
+      // Check for main function call
+      if (code.includes("if __name__ == \"__main__\":") || code.includes("if __name__ == '__main__':")) {
+        output += "\nExecuted main function.";
+      }
+      
+      setCompiledOutput(output);
     } catch (err) {
-      setError("Python simulation error");
+      setError(`Python simulation error: ${err instanceof Error ? err.message : 'Unknown error'}`);
     }
   };
 
-  // Simulate Java execution with basic output
+  // Enhanced Java execution with better class and method detection
   const simulateJavaExecution = (code: string) => {
     try {
-      // Check if code has a proper Java structure
-      if (!code.includes("class")) {
+      let output = "[Java Compiler]\n";
+      
+      // Check for package declaration
+      const packageMatch = code.match(/package\s+([a-zA-Z_][a-zA-Z0-9_.]*);/);
+      if (packageMatch) {
+        output += `Using package: ${packageMatch[1]}\n`;
+      }
+      
+      // Check for imports
+      const importMatches = code.match(/import\s+([a-zA-Z_][a-zA-Z0-9_.]*);/g);
+      if (importMatches && importMatches.length > 0) {
+        output += `Imported ${importMatches.length} package(s).\n`;
+      }
+      
+      // Check for class definition
+      const classMatch = code.match(/class\s+([a-zA-Z_][a-zA-Z0-9_]*)/);
+      if (!classMatch) {
         setError("Java code must contain a class definition");
         return;
       }
       
-      // Look for System.out.println statements
-      const printMatches = code.match(/System\.out\.println\((["'].*?["']|.*?)\)/g) || [];
+      const className = classMatch[1];
+      output += `Compiled class: ${className}\n`;
       
-      if (printMatches.length === 0) {
-        setCompiledOutput("[Java Compiler]\nCompiled successfully.\nProgram executed with no output.");
-        return;
+      // Check for main method
+      const hasMain = code.match(/public\s+static\s+void\s+main\s*\(\s*String(\[\])?\s+\w+\s*\)/);
+      if (hasMain) {
+        output += "Found main method, executing...\n\n";
+        
+        // Look for System.out.println and System.out.print statements with better regex
+        const printMatches = code.match(/System\.out\.println\s*\((.*?)\);|System\.out\.print\s*\((.*?)\);/g) || [];
+        
+        if (printMatches.length > 0) {
+          output += "Output:\n";
+          printMatches.forEach(match => {
+            // Extract content inside println() or print()
+            const isPrintln = match.includes("println");
+            const content = match.substring(
+              match.indexOf('(') + 1,
+              match.lastIndexOf(')')
+            );
+            
+            // Handle string literals vs variables/expressions
+            if ((content.startsWith('"') && content.endsWith('"')) || 
+                (content.startsWith("'") && content.endsWith("'"))) {
+              // Remove the quotes for the output
+              output += `${content.substring(1, content.length - 1)}${isPrintln ? '\n' : ''}`;
+            } else {
+              // For variables or expressions
+              output += `${content} (simulated)${isPrintln ? '\n' : ''}`;
+            }
+          });
+        } else {
+          output += "Program executed with no output.";
+        }
+      } else {
+        output += "No main method found. Cannot execute.";
       }
       
-      const output = printMatches.map(match => {
-        // Extract content inside println()
-        const content = match.substring(19, match.length - 1);
-        
-        // Handle string literals
-        if ((content.startsWith('"') && content.endsWith('"')) || 
-            (content.startsWith("'") && content.endsWith("'"))) {
-          return content.substring(1, content.length - 1);
-        }
-        
-        // For variables/expressions, just return placeholder
-        return `<simulated: ${content}>`;
-      }).join('\n');
-      
-      setCompiledOutput(`[Java Compiler]\nCompiled successfully.\n\n${output}`);
+      setCompiledOutput(output);
     } catch (err) {
-      setError("Java simulation error");
+      setError(`Java simulation error: ${err instanceof Error ? err.message : 'Unknown error'}`);
     }
   };
 
-  // Simulate C/C++ execution
+  // Enhanced C/C++ execution with better parsing and handling
   const simulateCppExecution = (code: string) => {
     try {
-      // Look for printf or cout statements
-      const printfMatches = code.match(/printf\(["'].*?["'].*?\)/g) || [];
-      const coutMatches = code.match(/cout\s*<<\s*["'].*?["']|cout\s*<<\s*\w+/g) || [];
+      let output = `[${language.id.toUpperCase()} Compiler]\n`;
       
-      if (printfMatches.length === 0 && coutMatches.length === 0) {
-        setCompiledOutput(`[${language.id.toUpperCase()} Compiler]\nCompiled successfully.\nProgram executed with no output.`);
-        return;
+      // Check for includes
+      const includeMatches = code.match(/#include\s*[<"]([^>"]+)[>"]/g);
+      if (includeMatches && includeMatches.length > 0) {
+        output += `Included ${includeMatches.length} header(s).\n`;
       }
       
-      let output = "";
+      // Check for namespace
+      if (code.includes("using namespace std;")) {
+        output += "Using namespace std\n";
+      }
       
-      // Process printf statements
-      printfMatches.forEach(match => {
-        const stringMatch = match.match(/["'](.*?)["']/);
-        if (stringMatch) {
-          output += stringMatch[1] + '\n';
-        }
-      });
-      
-      // Process cout statements
-      coutMatches.forEach(match => {
-        const stringMatch = match.match(/["'](.*?)["']/);
-        if (stringMatch) {
-          output += stringMatch[1];
-        } else {
-          const varMatch = match.match(/<<\s*(\w+)/);
-          if (varMatch) {
-            output += `<simulated: ${varMatch[1]}>`;
+      // Check for main function
+      const hasMain = code.match(/int\s+main\s*\(\s*(void|int\s+\w+\s*,\s*char\s*\*\s*\w+\[\s*\]|)\s*\)/);
+      if (hasMain) {
+        output += "Found main function, compiling and executing...\n\n";
+        
+        // Handle printf statements (C style)
+        const printfMatches = code.match(/printf\s*\(\s*"([^"]*)"(.*?)\);/g) || [];
+        
+        // Handle cout statements (C++ style)
+        const coutMatches = code.match(/cout\s*<<\s*(?:"([^"]*)"|'([^']*)'|([^<;]+))\s*(<<?[^;]+)?;/g) || [];
+        
+        if (printfMatches.length > 0 || coutMatches.length > 0) {
+          output += "Output:\n";
+          
+          // Process printf statements
+          printfMatches.forEach(match => {
+            // Extract format string
+            const formatMatch = match.match(/printf\s*\(\s*"([^"]*)"/);
+            if (formatMatch) {
+              let formatted = formatMatch[1];
+              
+              // Very basic format string handling
+              formatted = formatted.replace(/\\n/g, '\n');
+              formatted = formatted.replace(/\\t/g, '\t');
+              
+              // Handle format specifiers with placeholders
+              formatted = formatted.replace(/%d/g, '<int value>');
+              formatted = formatted.replace(/%f/g, '<float value>');
+              formatted = formatted.replace(/%s/g, '<string value>');
+              formatted = formatted.replace(/%c/g, '<char value>');
+              
+              output += formatted;
+            }
+          });
+          
+          // Process cout statements
+          coutMatches.forEach(match => {
+            // Check for string literals
+            const stringMatch = match.match(/<<\s*"([^"]*)"/);
+            if (stringMatch) {
+              output += stringMatch[1];
+            }
+            
+            // Check for character literals
+            const charMatch = match.match(/<<\s*'([^']*)'/);
+            if (charMatch) {
+              output += charMatch[1];
+            }
+            
+            // Check for endl
+            if (match.includes("<< endl") || match.includes("<<endl")) {
+              output += '\n';
+            }
+            
+            // Check for variables or expressions
+            const varMatch = match.match(/<<\s*([a-zA-Z0-9_]+)(?:\s*<<|$)/);
+            if (varMatch && !['endl', 'ends', 'flush'].includes(varMatch[1])) {
+              output += `<${varMatch[1]} value>`;
+            }
+          });
+          
+          if (!output.endsWith('\n')) {
+            output += '\n';
           }
+        } else {
+          output += "Program executed with no output.\n";
         }
-      });
+        
+        // Check for return statement in main
+        const returnMatch = code.match(/return\s+(\d+)\s*;/);
+        if (returnMatch) {
+          output += `\nProgram executed with return code: ${returnMatch[1]}`;
+        } else {
+          output += "\nProgram executed successfully.";
+        }
+      } else {
+        output += "No main function found. Cannot execute.";
+      }
       
-      setCompiledOutput(`[${language.id.toUpperCase()} Compiler]\nCompiled successfully.\n\n${output}`);
+      setCompiledOutput(output);
     } catch (err) {
-      setError(`${language.id.toUpperCase()} simulation error`);
+      setError(`${language.id.toUpperCase()} simulation error: ${err instanceof Error ? err.message : 'Unknown error'}`);
     }
   };
 
-  // Simulate TypeScript execution
+  // Enhanced TypeScript execution
   const simulateTypeScriptExecution = (code: string) => {
     try {
-      // Look for console.log statements
-      const logMatches = code.match(/console\.log\((["'].*?["']|.*?)\)/g) || [];
+      let output = "[TypeScript Compiler]\n";
       
-      if (logMatches.length === 0) {
-        setCompiledOutput("[TypeScript Compiler]\nTranspiled to JavaScript successfully.\nExecuted with no output.");
-        return;
+      // Check for imports
+      const importMatches = code.match(/import\s+.*?from\s+['"].*?['"];/g);
+      if (importMatches && importMatches.length > 0) {
+        output += `Processed ${importMatches.length} import statement(s).\n`;
       }
       
-      const output = logMatches.map(match => {
-        // Extract content inside console.log()
-        const content = match.substring(12, match.length - 1);
-        
-        // Handle string literals
-        if ((content.startsWith('"') && content.endsWith('"')) || 
-            (content.startsWith("'") && content.endsWith("'"))) {
-          return content.substring(1, content.length - 1);
-        }
-        
-        // For variables/expressions, just return placeholder
-        return `<simulated: ${content}>`;
-      }).join('\n');
+      // Check for interfaces
+      const interfaceMatches = code.match(/interface\s+([a-zA-Z_][a-zA-Z0-9_]*)/g);
+      if (interfaceMatches && interfaceMatches.length > 0) {
+        output += `Defined ${interfaceMatches.length} interface(s).\n`;
+      }
       
-      setCompiledOutput(`[TypeScript Compiler]\nTranspiled to JavaScript successfully.\n\n${output}`);
+      // Check for types
+      const typeMatches = code.match(/type\s+([a-zA-Z_][a-zA-Z0-9_]*)/g);
+      if (typeMatches && typeMatches.length > 0) {
+        output += `Defined ${typeMatches.length} type(s).\n`;
+      }
+      
+      // Check for classes
+      const classMatches = code.match(/class\s+([a-zA-Z_][a-zA-Z0-9_]*)/g);
+      if (classMatches && classMatches.length > 0) {
+        output += `Defined ${classMatches.length} class(es).\n`;
+      }
+      
+      // Process console.log statements with enhanced parsing
+      const logMatches = code.match(/console\.log\s*\((.*?)\)/g) || [];
+      
+      if (logMatches.length > 0) {
+        output += "\nTranspiled to JavaScript successfully.\n\nOutput:\n";
+        
+        logMatches.forEach(match => {
+          // Extract content inside console.log()
+          const content = match.substring(
+            match.indexOf('(') + 1,
+            match.lastIndexOf(')')
+          ).trim();
+          
+          // Handle string literals properly
+          if ((content.startsWith('"') && content.endsWith('"')) || 
+              (content.startsWith("'") && content.endsWith("'")) ||
+              (content.startsWith("`") && content.endsWith("`"))) {
+            // Remove the quotes/backticks and handle escapes
+            const stringContent = content.substring(1, content.length - 1)
+              .replace(/\\n/g, '\n')
+              .replace(/\\t/g, '\t');
+            output += `${stringContent}\n`;
+          } else if (content.includes('+')) {
+            // Handle string concatenation
+            const parts = content.split('+').map(p => p.trim());
+            output += `${parts.join('')} (simulated)\n`;
+          } else {
+            // For variables/expressions
+            output += `${content} (simulated)\n`;
+          }
+        });
+      } else if (code.includes("console.") && !code.includes("console.log")) {
+        // Handle other console methods
+        output += "\nTranspiled to JavaScript successfully.\n\nConsole output detected but not simulated (non-log methods).";
+      } else {
+        output += "\nTranspiled to JavaScript successfully.\n\nNo output. Program did not call console.log().";
+      }
+      
+      setCompiledOutput(output);
     } catch (err) {
-      setError("TypeScript simulation error");
+      setError(`TypeScript simulation error: ${err instanceof Error ? err.message : 'Unknown error'}`);
     }
   };
 
@@ -352,28 +514,35 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({ code, language }) => {
             variant="ghost"
             size="sm"
             onClick={() => {
-              // Create a new window with the code
-              const newWindow = window.open('', '_blank');
-              if (newWindow) {
-                newWindow.document.write(`
-                  <html>
-                    <head>
-                      <title>${language.name} Code</title>
-                      <style>
-                        body { font-family: system-ui, sans-serif; padding: 20px; }
-                        pre { background: #f5f5f5; padding: 16px; border-radius: 8px; overflow: auto; }
-                        .language { background: ${language.color}; color: white; display: inline-block; padding: 4px 8px; border-radius: 4px; font-size: 14px; margin-bottom: 12px; }
-                      </style>
-                    </head>
-                    <body>
-                      <h2>${language.name} Code</h2>
-                      <div class="language">${language.name}</div>
-                      <pre><code>${code.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</code></pre>
-                    </body>
-                  </html>
-                `);
-                newWindow.document.close();
+              // Choose appropriate external compiler based on language
+              let externalUrl = '';
+              const encodedCode = encodeURIComponent(code);
+              
+              switch (language.id) {
+                case 'python':
+                  externalUrl = `https://www.online-python.com/?code=${encodedCode}`;
+                  break;
+                case 'java':
+                  externalUrl = `https://www.jdoodle.com/online-java-compiler/?code=${encodedCode}`;
+                  break;
+                case 'cpp':
+                case 'c':
+                  externalUrl = `https://www.onlinegdb.com/online_c++_compiler?code=${encodedCode}`;
+                  break;
+                case 'javascript':
+                  externalUrl = `https://jsfiddle.net/create/?js=${encodedCode}`;
+                  break;
+                case 'typescript':
+                  externalUrl = `https://www.typescriptlang.org/play?#code/${encodedCode}`;
+                  break;
+                case 'html':
+                  externalUrl = `https://codepen.io/pen/?html=${encodedCode}`;
+                  break;
+                default:
+                  externalUrl = `https://godbolt.org/?code=${encodedCode}`;
               }
+              
+              window.open(externalUrl, '_blank');
             }}
             className="h-8 px-2 text-muted-foreground hover:text-foreground"
           >
