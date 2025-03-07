@@ -23,9 +23,8 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({ code, language }) => {
       return;
     }
 
-    // Generate embed URLs for Stackblitz or Replit based on language
+    // For web technologies (HTML, CSS, JS, Markdown), use our custom preview
     if (language.id === 'html' || language.id === 'css' || language.id === 'javascript' || language.id === 'markdown') {
-      // For web technologies, still use our custom preview
       let content = '';
       
       if (language.id === 'html') {
@@ -126,62 +125,58 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({ code, language }) => {
       setHtml(content);
       setEmbedUrl(null);
     } else {
-      // For other languages, use Replit or Stackblitz
-      let embedSrc = '';
+      // For all other languages, use JDoodle
+      let jdoodleUrl = 'https://www.jdoodle.com/embed/';
       
-      // Choose platform based on language
-      if (['python', 'java', 'c', 'cpp', 'csharp', 'go', 'rust'].includes(language.id)) {
-        // Use Replit for these languages
-        const replitTemplate = language.id === 'python' ? 'python' : 
-                             language.id === 'java' ? 'java' :
-                             language.id === 'c' ? 'c' :
-                             language.id === 'cpp' ? 'cpp' :
-                             language.id === 'csharp' ? 'csharp' :
-                             language.id === 'go' ? 'go' : 'rust';
-                             
-        // Encode the code for the URL
-        const encodedCode = encodeURIComponent(code);
-        embedSrc = `https://replit.com/@replit/${replitTemplate}?lite=true&outputonly=1#main.${language.extension}`;
-      } else if (['typescript', 'jsx', 'tsx'].includes(language.id)) {
-        // Use Stackblitz for TypeScript and React
-        const project = {
-          files: {
-            [language.id === 'typescript' ? 'index.ts' : 
-              language.id === 'jsx' ? 'index.jsx' : 'index.tsx']: code,
-            'package.json': JSON.stringify({
-              name: "code-preview",
-              version: "0.0.0",
-              private: true,
-              dependencies: {
-                ...(language.id === 'jsx' || language.id === 'tsx' ? {
-                  react: "^18.2.0",
-                  "react-dom": "^18.2.0"
-                } : {})
-              }
-            }, null, 2)
-          },
-          template: language.id === 'typescript' ? 'typescript' : 'react-ts'
-        };
-        
-        const projectJson = encodeURIComponent(JSON.stringify(project));
-        embedSrc = `https://stackblitz.com/edit?embed=1&file=${encodeURIComponent(
-          language.id === 'typescript' ? 'index.ts' : 
-          language.id === 'jsx' ? 'index.jsx' : 'index.tsx'
-        )}&hideExplorer=1&hideNavigation=1&view=preview&project=${projectJson}`;
-      } else if (['php', 'ruby', 'sql', 'dart', 'kotlin', 'swift'].includes(language.id)) {
-        // Use Replit for these languages too
-        const replitTemplate = language.id === 'php' ? 'php' : 
-                             language.id === 'ruby' ? 'ruby' :
-                             language.id === 'swift' ? 'swift' :
-                             language.id === 'kotlin' ? 'kotlin' :
-                             language.id === 'dart' ? 'dart' : 'sqlite';
-                             
-        // Encode the code for the URL
-        const encodedCode = encodeURIComponent(code);
-        embedSrc = `https://replit.com/@replit/${replitTemplate}?lite=true&outputonly=1#main.${language.extension}`;
+      // Map our language IDs to JDoodle's paths
+      switch (language.id) {
+        case 'python':
+          jdoodleUrl += 'python3/';
+          break;
+        case 'java':
+          jdoodleUrl += 'java/';
+          break;
+        case 'cpp':
+          jdoodleUrl += 'cpp/';
+          break;
+        case 'c':
+          jdoodleUrl += 'c/';
+          break;
+        case 'csharp':
+          jdoodleUrl += 'compile-c-sharp-online/';
+          break;
+        case 'php':
+          jdoodleUrl += 'php/';
+          break;
+        case 'ruby':
+          jdoodleUrl += 'ruby/';
+          break;
+        case 'typescript':
+        case 'jsx':
+        case 'tsx':
+          jdoodleUrl += 'typescript/';
+          break;
+        case 'go':
+          jdoodleUrl += 'go/';
+          break;
+        case 'rust':
+          jdoodleUrl += 'rust/';
+          break;
+        case 'kotlin':
+          jdoodleUrl += 'kotlin/';
+          break;
+        case 'swift':
+          jdoodleUrl += 'swift/';
+          break;
+        case 'dart':
+          jdoodleUrl += 'dart/';
+          break;
+        default:
+          // Default to JavaScript for unsupported languages
+          jdoodleUrl += 'javascript/';
       }
       
-      setEmbedUrl(embedSrc);
+      setEmbedUrl(jdoodleUrl);
       setHtml('');
     }
   }, [code, language]);
@@ -209,6 +204,18 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({ code, language }) => {
     }, 100);
   };
 
+  const openExternalPreview = () => {
+    if (html) {
+      const newWindow = window.open('', '_blank');
+      if (newWindow) {
+        newWindow.document.write(html);
+        newWindow.document.close();
+      }
+    } else if (embedUrl) {
+      window.open(embedUrl, '_blank');
+    }
+  };
+
   if (!code) {
     return (
       <div className="w-full h-[400px] rounded-md border border-border/50 bg-secondary/20 flex items-center justify-center text-muted-foreground animate-scale-in">
@@ -234,17 +241,7 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({ code, language }) => {
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => {
-              if (html) {
-                const newWindow = window.open('', '_blank');
-                if (newWindow) {
-                  newWindow.document.write(html);
-                  newWindow.document.close();
-                }
-              } else if (embedUrl) {
-                window.open(embedUrl, '_blank');
-              }
-            }}
+            onClick={openExternalPreview}
             className="h-8 px-2 text-muted-foreground hover:text-foreground"
           >
             <ExternalLink className="h-4 w-4" />
