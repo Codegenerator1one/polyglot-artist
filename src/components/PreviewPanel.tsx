@@ -125,58 +125,63 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({ code, language }) => {
       setHtml(content);
       setEmbedUrl(null);
     } else {
-      // For all other languages, use JDoodle
-      let jdoodleUrl = 'https://www.jdoodle.com/embed/';
+      // For other languages, use alternative services that don't require API keys
+      let compilerUrl = '';
       
-      // Map our language IDs to JDoodle's paths
+      // Map our language IDs to online compiler services
       switch (language.id) {
         case 'python':
-          jdoodleUrl += 'python3/';
+          compilerUrl = `https://trinket.io/embed/python3/a054c8a9a5?runOption=run&start=result&showInstructions=false`;
           break;
         case 'java':
-          jdoodleUrl += 'java/';
+          compilerUrl = `https://paiza.io/en/projects/new?language=java`;
           break;
         case 'cpp':
-          jdoodleUrl += 'cpp/';
+          compilerUrl = `https://godbolt.org/z/cP8MsrEoK`;
           break;
         case 'c':
-          jdoodleUrl += 'c/';
+          compilerUrl = `https://godbolt.org/z/aT3K1EMPc`;
           break;
         case 'csharp':
-          jdoodleUrl += 'compile-c-sharp-online/';
+          compilerUrl = `https://dotnetfiddle.net/`;
           break;
         case 'php':
-          jdoodleUrl += 'php/';
+          compilerUrl = `https://3v4l.org/`;
           break;
         case 'ruby':
-          jdoodleUrl += 'ruby/';
+          compilerUrl = `https://paiza.io/en/projects/new?language=ruby`;
           break;
         case 'typescript':
+          compilerUrl = `https://www.typescriptlang.org/play`;
+          break;
         case 'jsx':
         case 'tsx':
-          jdoodleUrl += 'typescript/';
+          compilerUrl = `https://codesandbox.io/s/react-new`;
           break;
         case 'go':
-          jdoodleUrl += 'go/';
+          compilerUrl = `https://go.dev/play/`;
           break;
         case 'rust':
-          jdoodleUrl += 'rust/';
+          compilerUrl = `https://play.rust-lang.org/`;
           break;
         case 'kotlin':
-          jdoodleUrl += 'kotlin/';
+          compilerUrl = `https://play.kotlinlang.org/`;
           break;
         case 'swift':
-          jdoodleUrl += 'swift/';
+          compilerUrl = `https://swiftfiddle.com/`;
           break;
         case 'dart':
-          jdoodleUrl += 'dart/';
+          compilerUrl = `https://dartpad.dev/`;
+          break;
+        case 'sql':
+          compilerUrl = `https://sqliteonline.com/`;
           break;
         default:
-          // Default to JavaScript for unsupported languages
-          jdoodleUrl += 'javascript/';
+          // Default to TypeScript playground for unsupported languages
+          compilerUrl = `https://www.typescriptlang.org/play`;
       }
       
-      setEmbedUrl(jdoodleUrl);
+      setEmbedUrl(compilerUrl);
       setHtml('');
     }
   }, [code, language]);
@@ -216,6 +221,7 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({ code, language }) => {
     }
   };
 
+  // Show loading message while we set up the preview
   if (!code) {
     return (
       <div className="w-full h-[400px] rounded-md border border-border/50 bg-secondary/20 flex items-center justify-center text-muted-foreground animate-scale-in">
