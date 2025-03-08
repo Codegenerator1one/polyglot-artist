@@ -269,8 +269,8 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({ code, language }) => {
       let output = "[Python Interpreter v3.10.0]\n";
       let errorDetected = false;
       
-      // Check for syntax errors first - fixing the unterminated string constant
-      if (code.includes('import') && code.includes('{') || code.includes('print(') && code.includes('})')) {
+      // Fixed: Check for syntax errors first - cleaned up the comparison
+      if ((code.includes('import') && code.includes('{')) || (code.includes('print(') && !code.includes(')'))) {
         output += "SyntaxError: invalid syntax\n";
         errorDetected = true;
       }
@@ -808,4 +808,4 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({ code, language }) => {
         output += "Found main function, executing...\n\n";
         
         // Process println statements
-        const printlnMatches = code.match(/println\
+        const printlnMatches = code.match(/println
