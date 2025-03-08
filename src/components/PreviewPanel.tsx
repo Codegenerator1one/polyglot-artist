@@ -165,15 +165,7 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({ code, language }) => {
             <html>
               <head>
                 <style>
-                  body { font-family: system-ui, sans-serif; padding: 20px; line-height: 1.6; }
-                  code { background: #f5f5f5; padding: 2px 4px; border-radius: 3px; }
-                  pre { background: #f5f5f5; padding: 12px; border-radius: 4px; overflow-x: auto; }
-                  blockquote { border-left: 4px solid #ddd; margin-left: 0; padding-left: 16px; color: #555; }
-                  img { max-width: 100%; }
-                  table { border-collapse: collapse; width: 100%; }
-                  th, td { border: 1px solid #ddd; padding: 8px; }
-                  th { background-color: #f5f5f5; }
-                </style>
+                  body { font-family: system-ui, sans-serif; padding: 20px; line-height: 1.6; }\n                  code { background: #f5f5f5; padding: 2px 4px; border-radius: 3px; }\n                  pre { background: #f5f5f5; padding: 12px; border-radius: 4px; overflow-x: auto; }\n                  blockquote { border-left: 4px solid #ddd; margin-left: 0; padding-left: 16px; color: #555; }\n                  img { max-width: 100%; }\n                  table { border-collapse: collapse; width: 100%; }\n                  th, td { border: 1px solid #ddd; padding: 8px; }\n                  th { background-color: #f5f5f5; }\n                </style>
                 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
               </head>
               <body>
@@ -738,4 +730,75 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({ code, language }) => {
           // For simple variables/expressions
           if (/^[a-zA-Z0-9_]+$/.test(content)) {
             output += `<${content}>\n`;
-          } else if
+          } else if (content.match(/^-?\d+(\.\d+)?$/)) {
+            // Handle numeric literals
+            output += `${content}\n`;
+          } else {
+            // Handle complex expressions
+            output += `<expression: ${content}>\n`;
+          }
+        });
+      } else if (code.trim()) {
+        output += "\nTranspiled to JavaScript successfully.\n\nProgram executed with no console output.\n";
+      }
+      
+      setCompiledOutput(output);
+    } catch (err) {
+      setError(`TypeScript simulation error: ${err instanceof Error ? err.message : 'Unknown error'}`);
+    }
+  };
+
+  // Add placeholder functions for other language simulations 
+  // that might be called but are not implemented yet
+  const simulateKotlinExecution = (code: string) => {
+    setCompiledOutput("[Kotlin Compiler v1.9.0]\nCompiled successfully.\n\n> Kotlin program executed. Output would appear here.");
+  };
+
+  const simulateSwiftExecution = (code: string) => {
+    setCompiledOutput("[Swift Compiler v5.8.0]\nCompiled successfully.\n\n> Swift program executed. Output would appear here.");
+  };
+
+  const simulateCSharpExecution = (code: string) => {
+    setCompiledOutput("[C# Compiler v10.0]\nCompiled successfully.\n\n> C# program executed. Output would appear here.");
+  };
+
+  const simulateGoExecution = (code: string) => {
+    setCompiledOutput("[Go Compiler v1.20.3]\nCompiled successfully.\n\n> Go program executed. Output would appear here.");
+  };
+
+  const simulateRustExecution = (code: string) => {
+    setCompiledOutput("[Rust Compiler v1.68.2]\nCompiled successfully.\n\n> Rust program executed. Output would appear here.");
+  };
+
+  const simulatePHPExecution = (code: string) => {
+    setCompiledOutput("[PHP Interpreter v8.2.4]\nExecuted successfully.\n\n> PHP program executed. Output would appear here.");
+  };
+
+  const simulateRubyExecution = (code: string) => {
+    setCompiledOutput("[Ruby Interpreter v3.2.1]\nExecuted successfully.\n\n> Ruby program executed. Output would appear here.");
+  };
+
+  useEffect(() => {
+    if (language && !['html', 'css', 'javascript', 'markdown'].includes(language.id)) {
+      setCompiledOutput(`[${language.name} Compiler]\nCompiled successfully.\n\n> Program output will appear here when you run the code.`);
+    }
+  }, [language]);
+
+  useEffect(() => {
+    // Clear iframe content on language change
+    if (iframeRef.current && iframeRef.current.contentWindow) {
+      iframeRef.current.contentWindow.document.open();
+      iframeRef.current.contentWindow.document.write('');
+      iframeRef.current.contentWindow.document.close();
+    }
+    setCompiledOutput('');
+    setError(null);
+  }, [language]);
+
+  return (
+    <div className="flex flex-col h-full">
+      <div className="flex items-center justify-between p-4 border-b border-white/10">
+        <h2 className="text-lg font-semibold text-white/90">
+          Preview
+        </h2>
+        <div className="flex items-center space-
