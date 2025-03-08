@@ -109,6 +109,10 @@ export default {
 				'pulse-subtle': {
 					'0%, 100%': { opacity: '1' },
 					'50%': { opacity: '0.85' }
+				},
+				'shimmer': {
+					'0%': { 'background-position': '-200% 0' },
+					'100%': { 'background-position': '200% 0' }
 				}
 			},
 			animation: {
@@ -121,6 +125,7 @@ export default {
 				'scale-in': 'scale-in 0.2s ease-out',
 				'blur-in': 'blur-in 0.3s ease-out',
 				'pulse-subtle': 'pulse-subtle 3s ease-in-out infinite',
+				'shimmer': 'shimmer 3s infinite',
 			},
 			backdropBlur: {
 				xs: '2px',

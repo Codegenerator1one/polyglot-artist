@@ -44,6 +44,7 @@ const Index = () => {
         toast({
           title: "Code Generated",
           description: `${selectedLanguage.name} code has been generated successfully.`,
+          className: "bg-black/80 text-white border border-white/10",
         });
       }
     } catch (error) {
@@ -59,19 +60,21 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-background">
+    <div className="min-h-screen flex flex-col text-white">
       <Header />
       
-      <main className="flex-1 container mx-auto py-6 px-4 space-y-8">
+      <main className="flex-1 container mx-auto py-8 px-4 space-y-8">
         <div className="space-y-8 max-w-7xl mx-auto">
-          <div className="space-y-2">
-            <h2 className="text-2xl font-semibold tracking-tight animate-fade-in">AI Code Generator</h2>
-            <p className="text-muted-foreground animate-fade-in delay-100">
+          <div className="space-y-2 animate-fade-in">
+            <h2 className="text-3xl font-bold tracking-tight gradient-text">
+              AI Code Generator
+            </h2>
+            <p className="text-lg text-white/70 animate-fade-in animate-delay-100">
               Generate code in multiple languages powered by Google Gemini AI
             </p>
           </div>
           
-          <Separator className="my-6" />
+          <Separator className="my-6 bg-white/10" />
           
           <LanguageSelector
             selectedLanguage={selectedLanguage}
@@ -83,29 +86,33 @@ const Index = () => {
             onGenerate={handleGenerate}
           />
           
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div className="space-y-2">
-              <div className="section-title">Code</div>
-              <CodeEditor 
-                code={code}
-                language={selectedLanguage}
-                onCodeChange={handleCodeChange}
-              />
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 animate-fade-in animate-delay-300">
+            <div className="space-y-3">
+              <div className="section-title text-white/70">Code Editor</div>
+              <div className="gradient-border animate-shimmer">
+                <CodeEditor 
+                  code={code}
+                  language={selectedLanguage}
+                  onCodeChange={handleCodeChange}
+                />
+              </div>
             </div>
             
-            <div className="space-y-2">
-              <div className="section-title">Preview</div>
-              <PreviewPanel 
-                code={code}
-                language={selectedLanguage}
-              />
+            <div className="space-y-3">
+              <div className="section-title text-white/70">Live Preview</div>
+              <div className="gradient-border animate-shimmer">
+                <PreviewPanel 
+                  code={code}
+                  language={selectedLanguage}
+                />
+              </div>
             </div>
           </div>
         </div>
       </main>
       
-      <footer className="border-t border-border/50 py-4 text-center text-sm text-muted-foreground">
-        <p>Powered by Google Gemini 2.0 Flash API</p>
+      <footer className="border-t border-white/10 py-5 text-center text-sm text-white/60 backdrop-blur-sm">
+        <p className="animate-fade-in">Powered by Google Gemini 2.0 Flash API</p>
       </footer>
     </div>
   );
