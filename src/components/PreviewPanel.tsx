@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState, useRef } from 'react';
 import { Language } from '../utils/supportedLanguages';
 import { ExternalLink, RefreshCw, Play, AlertTriangle, Code, Terminal } from 'lucide-react';
@@ -165,7 +166,15 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({ code, language }) => {
             <html>
               <head>
                 <style>
-                  body { font-family: system-ui, sans-serif; padding: 20px; line-height: 1.6; }\n                  code { background: #f5f5f5; padding: 2px 4px; border-radius: 3px; }\n                  pre { background: #f5f5f5; padding: 12px; border-radius: 4px; overflow-x: auto; }\n                  blockquote { border-left: 4px solid #ddd; margin-left: 0; padding-left: 16px; color: #555; }\n                  img { max-width: 100%; }\n                  table { border-collapse: collapse; width: 100%; }\n                  th, td { border: 1px solid #ddd; padding: 8px; }\n                  th { background-color: #f5f5f5; }\n                </style>
+                  body { font-family: system-ui, sans-serif; padding: 20px; line-height: 1.6; }
+                  code { background: #f5f5f5; padding: 2px 4px; border-radius: 3px; }
+                  pre { background: #f5f5f5; padding: 12px; border-radius: 4px; overflow-x: auto; }
+                  blockquote { border-left: 4px solid #ddd; margin-left: 0; padding-left: 16px; color: #555; }
+                  img { max-width: 100%; }
+                  table { border-collapse: collapse; width: 100%; }
+                  th, td { border: 1px solid #ddd; padding: 8px; }
+                  th { background-color: #f5f5f5; }
+                </style>
                 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
               </head>
               <body>
@@ -801,4 +810,140 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({ code, language }) => {
         <h2 className="text-lg font-semibold text-white/90">
           Preview
         </h2>
-        <div className="flex items-center space-
+        <div className="flex items-center space-x-2">
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={compileCode}
+            disabled={isCompiling || !code.trim()}
+            className={cn(
+              "text-white/80 hover:text-white",
+              isCompiling && "opacity-50 cursor-not-allowed"
+            )}
+          >
+            {isCompiling ? (
+              <>
+                <RefreshCw className="w-4 h-4 mr-1 animate-spin" />
+                Compiling...
+              </>
+            ) : (
+              <>
+                <Play className="w-4 h-4 mr-1" />
+                Run Code
+              </>
+            )}
+          </Button>
+        </div>
+      </div>
+      
+      <Tabs 
+        value={activeTab} 
+        onValueChange={(value) => setActiveTab(value as 'output' | 'console')}
+        className="flex-1 flex flex-col"
+      >
+        <TabsList className="flex w-full bg-black/30 border-b border-white/10 px-4 h-12">
+          <TabsTrigger 
+            value="output" 
+            className={cn(
+              "flex-1 rounded-none border-b-2 border-transparent data-[state=active]:border-primary",
+              activeTab === "output" ? "text-white" : "text-white/60"
+            )}
+          >
+            <Code className="w-4 h-4 mr-2" />
+            Output
+          </TabsTrigger>
+          <TabsTrigger 
+            value="console" 
+            className={cn(
+              "flex-1 rounded-none border-b-2 border-transparent data-[state=active]:border-primary",
+              activeTab === "console" ? "text-white" : "text-white/60"
+            )}
+          >
+            <Terminal className="w-4 h-4 mr-2" />
+            Console
+          </TabsTrigger>
+        </TabsList>
+        
+        <TabsContent 
+          value="output" 
+          className="flex-1 overflow-auto p-0 m-0 border-none outline-none"
+        >
+          {['html', 'css', 'javascript', 'markdown'].includes(language.id) ? (
+            <iframe 
+              ref={iframeRef}
+              title="Code Preview"
+              sandbox="allow-scripts allow-same-origin"
+              className="w-full h-full bg-white border-none dark:bg-zinc-900"
+            />
+          ) : (
+            <div className="flex items-center justify-center h-full text-white/60 bg-black/20 p-6">
+              <div className="text-center max-w-md">
+                <AlertTriangle className="w-8 h-8 mx-auto mb-4 text-yellow-500" />
+                <h3 className="text-lg font-medium mb-2">Preview Not Available</h3>
+                <p className="text-sm text-white/50 mb-4">
+                  Live preview is only available for web technologies (HTML, CSS, JavaScript, and Markdown).
+                </p>
+                <p className="text-sm text-white/50">
+                  Use the <strong>Console</strong> tab to see compilation output for {language.name}.
+                </p>
+              </div>
+            </div>
+          )}
+        </TabsContent>
+        
+        <TabsContent 
+          value="console" 
+          className="flex-1 overflow-auto p-0 m-0 border-none outline-none bg-zinc-900"
+        >
+          <div className="p-4">
+            {error ? (
+              <div className="text-red-400 p-3 bg-red-950/30 rounded border border-red-800/50 mb-4">
+                <div className="flex items-start">
+                  <AlertTriangle className="w-5 h-5 mr-2 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <h4 className="font-medium mb-1">Error</h4>
+                    <pre className="text-sm whitespace-pre-wrap font-mono">{error}</pre>
+                  </div>
+                </div>
+              </div>
+            ) : null}
+            
+            <div className="font-mono text-sm whitespace-pre-wrap text-white/90">
+              {compiledOutput || (
+                <div className="text-white/40 italic">
+                  {isCompiling 
+                    ? "Compiling..." 
+                    : (code.trim() 
+                        ? `Click "Run Code" to compile and execute.` 
+                        : `Enter some ${language.name} code to get started.`
+                      )
+                  }
+                </div>
+              )}
+            </div>
+          </div>
+        </TabsContent>
+      </Tabs>
+      
+      <div className="p-3 border-t border-white/10 bg-black/20 text-xs text-white/50 flex justify-between">
+        <div>
+          Language: <span className="text-white/80 font-medium">{language.name}</span>
+        </div>
+        <div className="flex items-center">
+          <Link 
+            href={`https://www.google.com/search?q=${language.name}+documentation`}
+            className="flex items-center hover:text-white transition-colors"
+            underline={false}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Documentation
+            <ExternalLink className="w-3 h-3 ml-1" />
+          </Link>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default PreviewPanel;
