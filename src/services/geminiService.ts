@@ -6,6 +6,7 @@ export interface CodeGenerationRequest {
   language: string;
   prompt: string;
   context?: string;
+  imageData?: string;
 }
 
 export interface CodeGenerationResponse {
@@ -27,33 +28,53 @@ export const generateCode = async (request: CodeGenerationRequest): Promise<Code
     
     const userPrompt = `${request.prompt}${request.context ? "\n\nContext: " + request.context : ""}`;
 
+    // Create request body
+    const requestBody: any = {
+      contents: [
+        {
+          parts: [
+            { text: systemPrompt }
+          ],
+          role: "user"
+        }
+      ],
+      generationConfig: {
+        temperature: 0.2,
+        topP: 0.8,
+        topK: 40,
+        maxOutputTokens: 8192
+      }
+    };
+
+    // Add user prompt with optional image
+    const userPromptParts = [];
+    
+    // Add text prompt
+    userPromptParts.push({ text: userPrompt });
+    
+    // Add image if provided
+    if (request.imageData) {
+      const base64Data = request.imageData.split(',')[1]; // Remove the data:image/xyz;base64, prefix
+      userPromptParts.push({
+        inlineData: {
+          mimeType: request.imageData.split(';')[0].split(':')[1], // Extract MIME type
+          data: base64Data
+        }
+      });
+    }
+    
+    // Add the user message with all parts
+    requestBody.contents.push({
+      parts: userPromptParts,
+      role: "user"
+    });
+
     const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${API_KEY}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        contents: [
-          {
-            parts: [
-              { text: systemPrompt }
-            ],
-            role: "user"
-          },
-          {
-            parts: [
-              { text: userPrompt }
-            ],
-            role: "user"
-          }
-        ],
-        generationConfig: {
-          temperature: 0.2,
-          topP: 0.8,
-          topK: 40,
-          maxOutputTokens: 8192
-        }
-      })
+      body: JSON.stringify(requestBody)
     });
 
     if (!response.ok) {

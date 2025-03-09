@@ -24,13 +24,14 @@ const Index = () => {
     setCode(newCode);
   };
 
-  const handleGenerate = async (prompt: string) => {
+  const handleGenerate = async (prompt: string, imageData?: string) => {
     setIsGenerating(true);
     
     try {
       const result = await generateCode({
         language: selectedLanguage.name,
-        prompt: prompt
+        prompt: prompt,
+        imageData: imageData
       });
       
       if (result.error) {
