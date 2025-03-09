@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState, useRef } from 'react';
 import { Language } from '../utils/supportedLanguages';
 import { ExternalLink, RefreshCw, Play, AlertTriangle, Code, Terminal } from 'lucide-react';
@@ -29,7 +28,6 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({ code, language }) => {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const { toast } = useToast();
 
-  // Map language ID to appropriate CodeMirror language extension
   const getLanguageExtension = (langId: string) => {
     switch (langId) {
       case 'javascript':
@@ -63,7 +61,6 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({ code, language }) => {
     setError(null);
 
     try {
-      // For web technologies, render directly in the iframe
       if (['html', 'css', 'javascript', 'markdown'].includes(language.id)) {
         let content = '';
         
@@ -112,7 +109,6 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({ code, language }) => {
                 <h3>JavaScript Console Output:</h3>
                 <div id="output"></div>
                 <script>
-                  // Capture console.log output
                   const output = document.getElementById('output');
                   const originalConsoleLog = console.log;
                   const originalConsoleError = console.error;
@@ -151,7 +147,6 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({ code, language }) => {
                     output.innerHTML += '<div class="warning" style="color: orange;">' + text + '</div>';
                   };
                   
-                  // Run the user code
                   try {
                     ${code}
                   } catch (error) {
@@ -187,7 +182,6 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({ code, language }) => {
           `;
         }
         
-        // Update iframe content
         if (iframeRef.current && iframeRef.current.contentWindow) {
           iframeRef.current.contentWindow.document.open();
           iframeRef.current.contentWindow.document.write(content);
@@ -197,13 +191,9 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({ code, language }) => {
         setCompiledOutput('');
         setActiveTab('output');
       } else {
-        // For other languages, provide advanced simulated compilation
         setActiveTab('console');
-        
-        // Simulate compilation delay
         await new Promise(resolve => setTimeout(resolve, 600));
         
-        // Language-specific compilation output
         switch (language.id) {
           case 'python':
             simulatePythonExecution(code);
@@ -263,20 +253,17 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({ code, language }) => {
     }
   };
 
-  // Enhanced Python execution simulation with better parsing
   const simulatePythonExecution = (code: string) => {
     try {
       let output = "[Python Interpreter v3.10.0]\n";
       let errorDetected = false;
       
-      // Fixed: Check for syntax errors first - cleaned up the comparison
       if ((code.includes('import') && code.includes('{')) || (code.includes('print(') && !code.includes(')'))) {
         output += "SyntaxError: invalid syntax\n";
         errorDetected = true;
       }
       
       if (!errorDetected) {
-        // Check for imports
         const importMatches = code.match(/(?:import|from) [\w\s.,*]+(?: import [\w\s.,*]+)?/g) || [];
         if (importMatches.length > 0) {
           output += "Successfully imported modules:\n";
@@ -286,7 +273,6 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({ code, language }) => {
           output += "\n";
         }
         
-        // Detect and handle functions
         const functionMatches = code.match(/def\s+([a-zA-Z_][a-zA-Z0-9_]*)\s*\(/g) || [];
         if (functionMatches.length > 0) {
           output += `Defined ${functionMatches.length} function(s):\n`;
@@ -296,7 +282,6 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({ code, language }) => {
           output += "\n";
         }
         
-        // Detect classes
         const classMatches = code.match(/class\s+([a-zA-Z_][a-zA-Z0-9_]*)/g) || [];
         if (classMatches.length > 0) {
           output += `Defined ${classMatches.length} class(es):\n`;
@@ -306,19 +291,15 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({ code, language }) => {
           output += "\n";
         }
         
-        // Process print statements with better regex
         const printMatches = code.match(/print\s*\((.*?)(?:\)|(?:#))/g) || [];
         
         if (printMatches.length > 0) {
           output += "Output:\n";
           printMatches.forEach(match => {
-            if (match.includes('#')) return; // Skip commented prints
-            
-            // Extract content inside print()
+            if (match.includes('#')) return; 
             let content = match.substring(match.indexOf('(') + 1);
             content = content.substring(0, content.lastIndexOf(')'));
             
-            // Handle f-strings
             if (content.startsWith('f"') || content.startsWith("f'")) {
               const baseString = content.substring(2, content.length - 1);
               const formattedString = baseString.replace(/\{([^}]+)\}/g, (_, expr) => `<${expr.trim()}>`);
@@ -326,14 +307,12 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({ code, language }) => {
               return;
             }
             
-            // Handle string literals
             if ((content.startsWith('"') && content.endsWith('"')) || 
                 (content.startsWith("'") && content.endsWith("'"))) {
               output += `${content.substring(1, content.length - 1)}\n`;
               return;
             }
             
-            // Handle variables/expressions
             if (content.includes('+') || content.includes(',')) {
               const parts = content.split(/[+,]/).map(p => p.trim());
               const outputParts = parts.map(part => {
@@ -348,28 +327,23 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({ code, language }) => {
               return;
             }
             
-            // Default case
             output += `${content} (evaluated value)\n`;
           });
         } else if (code.trim() && !functionMatches.length && !classMatches.length && !code.includes('if __name__')) {
-          // Interactive mode output for simple expressions
           const lines = code.split('\n').filter(line => line.trim() && !line.trim().startsWith('#'));
           if (lines.length > 0) {
             output += "Output:\n";
             lines.forEach(line => {
               if (line.includes('=')) {
-                // Variable assignment
                 const parts = line.split('=');
                 output += `> ${parts[0].trim()} = ${parts[1].trim()} (assigned)\n`;
               } else if (!line.includes('import ') && !line.includes('from ')) {
-                // Expression evaluation
                 output += `> ${line.trim()} (evaluated to result)\n`;
               }
             });
           }
         }
         
-        // Check for main function call
         if (code.includes("if __name__ == \"__main__\":") || code.includes("if __name__ == '__main__':")) {
           output += "\nExecuted main function successfully.\n";
           output += "Program executed with return code: 0\n";
@@ -384,13 +358,11 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({ code, language }) => {
     }
   };
 
-  // Enhanced Java execution with better class and method detection
   const simulateJavaExecution = (code: string) => {
     try {
       let output = "[Java Compiler v17.0.6]\n";
       let errorDetected = false;
       
-      // Check for syntax errors
       if ((code.includes('public class') && !code.includes('{')) || 
           (code.includes('System.out.println') && !code.includes(';'))) {
         output += "Error: Syntax error detected\n";
@@ -398,13 +370,11 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({ code, language }) => {
       }
       
       if (!errorDetected) {
-        // Check for package declaration
         const packageMatch = code.match(/package\s+([a-zA-Z_][a-zA-Z0-9_.]*);/);
         if (packageMatch) {
           output += `Using package: ${packageMatch[1]}\n`;
         }
         
-        // Check for imports
         const importMatches = code.match(/import\s+([a-zA-Z_][a-zA-Z0-9_.]*)(|\.\*);/g) || [];
         if (importMatches.length > 0) {
           output += `Successfully imported ${importMatches.length} package(s):\n`;
@@ -414,37 +384,31 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({ code, language }) => {
           output += "\n";
         }
         
-        // Check for class definition
         const classMatch = code.match(/class\s+([a-zA-Z_][a-zA-Z0-9_]*)/);
         if (classMatch) {
           const className = classMatch[1];
           output += `Compiled class: ${className}\n`;
           
-          // Find methods in the class
           const methodMatches = code.match(/(?:public|private|protected)?\s+(?:static)?\s+\w+\s+([a-zA-Z_][a-zA-Z0-9_]*)\s*\([^)]*\)\s*(?:throws\s+[a-zA-Z_][a-zA-Z0-9_]*(?:,\s*[a-zA-Z_][a-zA-Z0-9_]*)*\s*)?{/g) || [];
           if (methodMatches.length > 0) {
             output += `Found ${methodMatches.length} method(s) in class ${className}\n\n`;
           }
           
-          // Check for main method
           const hasMain = code.match(/public\s+static\s+void\s+main\s*\(\s*String(\[\])?\s+\w+\s*\)/);
           if (hasMain) {
             output += "Found main method, executing...\n\n";
             
-            // Look for System.out.println and System.out.print statements with better regex
             const printMatches = code.match(/System\.out\.println\s*\((.*?)\);|System\.out\.print\s*\((.*?)\);/g) || [];
             
             if (printMatches.length > 0) {
               output += "Output:\n";
               printMatches.forEach(match => {
-                // Extract content inside println() or print()
                 const isPrintln = match.includes("println");
                 let content = match.substring(
                   match.indexOf('(') + 1,
                   match.lastIndexOf(')')
                 );
                 
-                // Handle string concatenation
                 if (content.includes(" + ")) {
                   const parts = content.split(" + ").map(p => p.trim());
                   let result = "";
@@ -462,13 +426,10 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({ code, language }) => {
                   return;
                 }
                 
-                // Handle string literals vs variables/expressions
                 if ((content.startsWith('"') && content.endsWith('"')) || 
                     (content.startsWith("'") && content.endsWith("'"))) {
-                  // Remove the quotes for the output
                   output += `${content.substring(1, content.length - 1)}${isPrintln ? '\n' : ''}`;
                 } else {
-                  // For variables or expressions
                   output += `<${content}>${isPrintln ? '\n' : ''}`;
                 }
               });
@@ -491,13 +452,11 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({ code, language }) => {
     }
   };
 
-  // Enhanced C/C++ execution with better parsing and handling
   const simulateCppExecution = (code: string) => {
     try {
       let output = `[${language.id.toUpperCase()} Compiler v13.2.0]\n`;
       let errorDetected = false;
       
-      // Check for syntax errors
       if ((code.includes('int main') && !code.includes('{')) || 
           (code.includes('printf') && !code.includes(';'))) {
         output += "Error: Syntax error detected\n";
@@ -505,7 +464,6 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({ code, language }) => {
       }
       
       if (!errorDetected) {
-        // Check for includes
         const includeMatches = code.match(/#include\s*[<"]([^>"]+)[>"]/g) || [];
         if (includeMatches.length > 0) {
           output += `Successfully included ${includeMatches.length} header(s):\n`;
@@ -515,48 +473,36 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({ code, language }) => {
           output += "\n";
         }
         
-        // Check for namespace
         if (code.includes("using namespace std;")) {
           output += "Using namespace std\n\n";
         }
         
-        // Look for function definitions
         const functionMatches = code.match(/\w+\s+(\w+)\s*\([^)]*\)\s*(?:const)?\s*{/g) || [];
         if (functionMatches.length > 0 && !functionMatches.some(f => f.includes('main'))) {
           output += `Found ${functionMatches.length} function definition(s)\n`;
         }
         
-        // Check for main function
         const hasMain = code.match(/int\s+main\s*\(\s*(void|int\s+\w+\s*,\s*char\s*\*\s*\w+\[\s*\]|)\s*\)/);
         if (hasMain) {
           output += "Found main function, compiling and executing...\n\n";
           
-          // Handle printf statements (C style)
           const printfMatches = code.match(/printf\s*\(\s*("[^"]*"(?:,\s*[^;]+)?)\);/g) || [];
-          
-          // Handle cout statements (C++ style)
           const coutMatches = code.match(/cout\s*<<\s*(?:"([^"]*)"|'([^']*)'|([^<;]+))(?:\s*<<\s*(?:endl|"[^"]*"|'[^']*'|[^<;]+))*\s*;/g) || [];
           
           if (printfMatches.length > 0 || coutMatches.length > 0) {
             output += "Output:\n";
             
-            // Process printf statements
             printfMatches.forEach(match => {
-              // Extract format string and arguments
               const parts = match.substring(match.indexOf('(') + 1, match.lastIndexOf(')'));
               const formatStringMatch = parts.match(/"([^"]*)"/);
               
               if (formatStringMatch) {
                 let formatted = formatStringMatch[1];
-                
-                // Handle format specifiers with placeholders
                 const args = parts.substring(formatStringMatch[0].length).split(',').map(arg => arg.trim()).filter(arg => arg);
                 
-                // Replace format specifiers with argument values or placeholders
                 let argIndex = 0;
                 formatted = formatted.replace(/%d|%i|%f|%lf|%c|%s|%p|%x|%X|%o|%u/g, (match) => {
                   if (argIndex < args.length) {
-                    // If it's a literal (number), use it directly
                     if (/^-?\d+(\.\d+)?$/.test(args[argIndex])) {
                       return args[argIndex++];
                     } else {
@@ -567,7 +513,6 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({ code, language }) => {
                   }
                 });
                 
-                // Handle escape sequences
                 formatted = formatted
                   .replace(/\\n/g, '\n')
                   .replace(/\\t/g, '\t')
@@ -579,12 +524,10 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({ code, language }) => {
               }
             });
             
-            // Process cout statements
             coutMatches.forEach(match => {
               let coutOutput = '';
               let hasEndl = false;
               
-              // Process all parts in the cout statement
               const coutParts = match.replace(/cout\s*<<\s*/, '').replace(/\s*;$/, '').split(/\s*<<\s*/);
               
               coutParts.forEach(part => {
@@ -593,19 +536,16 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({ code, language }) => {
                   return;
                 }
                 
-                // Handle string literals
                 if (part.startsWith('"') && part.endsWith('"')) {
                   coutOutput += part.substring(1, part.length - 1);
                   return;
                 }
                 
-                // Handle character literals
                 if (part.startsWith("'") && part.endsWith("'")) {
                   coutOutput += part.substring(1, part.length - 1);
                   return;
                 }
                 
-                // Handle variables or expressions
                 if (part.match(/^[a-zA-Z0-9_]+$/)) {
                   coutOutput += `<${part}>`;
                 } else if (part.match(/^-?\d+(\.\d+)?$/)) {
@@ -621,7 +561,6 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({ code, language }) => {
             output += "Program executed with no output.\n";
           }
           
-          // Check for return statement in main
           const returnMatch = code.match(/return\s+(\d+)\s*;/);
           if (returnMatch) {
             output += `\nProgram executed with return code: ${returnMatch[1]}\n`;
@@ -639,12 +578,10 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({ code, language }) => {
     }
   };
 
-  // Enhanced TypeScript execution
   const simulateTypeScriptExecution = (code: string) => {
     try {
       let output = "[TypeScript Compiler v5.0.4]\n";
       
-      // Check for syntax errors
       if ((code.includes('function') && !code.includes('{')) || 
           (code.includes('console.log') && !code.includes(';') && !code.includes('}'))) {
         output += "Error: TypeScript syntax error detected\n";
@@ -652,7 +589,6 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({ code, language }) => {
         return;
       }
       
-      // Check for imports
       const importMatches = code.match(/import\s+.*?from\s+['"].*?['"];/g) || [];
       if (importMatches.length > 0) {
         output += `Processed ${importMatches.length} import statement(s):\n`;
@@ -662,44 +598,37 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({ code, language }) => {
         output += "\n";
       }
       
-      // Check for interfaces
       const interfaceMatches = code.match(/interface\s+([a-zA-Z_][a-zA-Z0-9_]*)/g) || [];
       if (interfaceMatches.length > 0) {
         output += `Defined ${interfaceMatches.length} interface(s)\n`;
       }
       
-      // Check for types
       const typeMatches = code.match(/type\s+([a-zA-Z_][a-zA-Z0-9_]*)/g) || [];
       if (typeMatches.length > 0) {
         output += `Defined ${typeMatches.length} type(s)\n`;
       }
       
-      // Check for classes
       const classMatches = code.match(/class\s+([a-zA-Z_][a-zA-Z0-9_]*)/g) || [];
       if (classMatches.length > 0) {
         output += `Defined ${classMatches.length} class(es)\n`;
       }
       
-      // Check for functions
       const functionMatches = code.match(/function\s+([a-zA-Z_][a-zA-Z0-9_]*)/g) || [];
       if (functionMatches.length > 0) {
         output += `Defined ${functionMatches.length} function(s)\n`;
       }
       
-      // Process console.log statements with enhanced parsing
       const logMatches = code.match(/console\.log\s*\((.*?)\)/g) || [];
       
       if (logMatches.length > 0) {
         output += "\nTranspiled to JavaScript successfully.\n\nOutput:\n";
         
         logMatches.forEach(match => {
-          // Extract content inside console.log()
           const content = match.substring(
             match.indexOf('(') + 1,
             match.lastIndexOf(')')
           ).trim();
           
-          // Handle template literals
           if (content.startsWith('`') && content.endsWith('`')) {
             const templateContent = content.substring(1, content.length - 1);
             const interpolatedContent = templateContent.replace(/\${([^}]*)}/g, (_, expr) => `<${expr}>`);
@@ -707,10 +636,8 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({ code, language }) => {
             return;
           }
           
-          // Handle string literals properly
           if ((content.startsWith('"') && content.endsWith('"')) || 
               (content.startsWith("'") && content.endsWith("'"))) {
-            // Remove the quotes/backticks and handle escapes
             const stringContent = content.substring(1, content.length - 1)
               .replace(/\\n/g, '\n')
               .replace(/\\t/g, '\t');
@@ -718,7 +645,6 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({ code, language }) => {
             return;
           } 
           
-          // Handle string concatenation
           if (content.includes('+')) {
             const parts = content.split('+').map(p => p.trim());
             let result = '';
@@ -736,14 +662,11 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({ code, language }) => {
             return;
           }
           
-          // For simple variables/expressions
           if (/^[a-zA-Z0-9_]+$/.test(content)) {
             output += `<${content}>\n`;
           } else if (content.match(/^-?\d+(\.\d+)?$/)) {
-            // Handle numeric literals
             output += `${content}\n`;
           } else {
-            // Handle complex expressions
             output += `<expression: ${content}>\n`;
           }
         });
@@ -757,8 +680,6 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({ code, language }) => {
     }
   };
 
-  // Add placeholder functions for other language simulations 
-  // that might be called but are not implemented yet
   const simulateKotlinExecution = (code: string) => {
     setCompiledOutput("[Kotlin Compiler v1.9.0]\nCompiled successfully.\n\n> Kotlin program executed. Output would appear here.");
   };
@@ -794,7 +715,6 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({ code, language }) => {
   }, [language]);
 
   useEffect(() => {
-    // Clear iframe content on language change
     if (iframeRef.current && iframeRef.current.contentWindow) {
       iframeRef.current.contentWindow.document.open();
       iframeRef.current.contentWindow.document.write('');
@@ -873,10 +793,10 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({ code, language }) => {
               ref={iframeRef}
               title="Code Preview"
               sandbox="allow-scripts allow-same-origin"
-              className="w-full h-full bg-white border-none dark:bg-zinc-900"
+              className="w-full h-[400px] bg-white border-none dark:bg-zinc-900"
             />
           ) : (
-            <div className="flex items-center justify-center h-full text-white/60 bg-black/20 p-6">
+            <div className="flex items-center justify-center h-[400px] text-white/60 bg-black/20 p-6">
               <div className="text-center max-w-md">
                 <AlertTriangle className="w-8 h-8 mx-auto mb-4 text-yellow-500" />
                 <h3 className="text-lg font-medium mb-2">Preview Not Available</h3>
@@ -895,7 +815,7 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({ code, language }) => {
           value="console" 
           className="flex-1 overflow-auto p-0 m-0 border-none outline-none bg-zinc-900"
         >
-          <div className="p-4">
+          <div className="p-4 h-[400px] overflow-auto">
             {error ? (
               <div className="text-red-400 p-3 bg-red-950/30 rounded border border-red-800/50 mb-4">
                 <div className="flex items-start">

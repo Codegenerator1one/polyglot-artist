@@ -66,7 +66,7 @@ const Index = () => {
       <main className="flex-1 container mx-auto py-8 px-4 space-y-8">
         <div className="space-y-8 max-w-7xl mx-auto">
           <div className="space-y-2 animate-fade-in">
-            <h2 className="text-3xl font-bold tracking-tight gradient-text">
+            <h2 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-white via-gray-300 to-black bg-clip-text text-transparent">
               AI Code Generator
             </h2>
             <p className="text-lg text-white/70 animate-fade-in animate-delay-100">
