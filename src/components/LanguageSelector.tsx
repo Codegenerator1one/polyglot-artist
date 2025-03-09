@@ -1,4 +1,4 @@
-<lov-code>
+
 import React from 'react';
 import { supportedLanguages, Language } from '../utils/supportedLanguages';
 import { cn } from '@/lib/utils';
@@ -121,4 +121,54 @@ const LanguageSelector: React.FC<LanguageSelectorProps> = ({
           )}
           
           {id === 'sql' && (
-            <path d="M4 12c0 2.2 3.6 4 8 4s8-1.8 8-4v-1H4v1zm0-3c0 2.2 3.6 4 8 4s8-1.8 8-4V8H4v1zm16-3v1c
+            <path d="M4 12c0 2.2 3.6 4 8 4s8-1.8 8-4v-1H4v1zm0-3c0 2.2 3.6 4 8 4s8-1.8 8-4V8H4v1zm16-3v1c0 2.2-3.6 4-8 4S4 9.2 4 7V6c0-2.2 3.6-4 8-4s8 1.8 8 4zM12 4c-3.3 0-6 1.3-6 3s2.7 3 6 3 6-1.3 6-3-2.7-3-6-3z" 
+            fill={`url(#gradient-${id})`} />
+          )}
+          
+          {id === 'markdown' && (
+            <path d="M20.56 18H3.44C2.65 18 2 17.37 2 16.59V7.41C2 6.63 2.65 6 3.44 6h17.12c.79 0 1.44.63 1.44 1.41v9.18c0 .78-.65 1.41-1.44 1.41zM7 9H5v6h2v-2.95L8.94 15H11l-3-3 3-3H8.94L7 11.95V9zm9 0h-2v6h2v-2h2v2h2V9h-2v2h-2V9z" 
+            fill={`url(#gradient-${id})`} />
+          )}
+          
+          {/* Default code icon for any languages without specific icons */}
+          {!['html', 'css', 'javascript', 'typescript', 'jsx', 'tsx', 'python', 
+              'java', 'kotlin', 'swift', 'c', 'cpp', 'csharp', 'go', 'rust', 
+              'dart', 'php', 'ruby', 'sql', 'markdown'].includes(id) && (
+            <path d="M9.4 16.6L4.8 12l4.6-4.6L8 6l-6 6 6 6 1.4-1.4zm5.2 0l4.6-4.6-4.6-4.6L16 6l6 6-6 6-1.4-1.4z" 
+            fill={`url(#gradient-${id})`} />
+          )}
+        </svg>
+      </div>
+    );
+  };
+
+  return (
+    <div className="w-full animate-slide-up" style={{ animationDelay: '100ms' }}>
+      <div className="section-title mb-3 text-white/70 flex items-center">
+        <Code className="w-4 h-4 mr-2 text-white/80" /> Select Language
+      </div>
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2">
+        {supportedLanguages.map((language, index) => (
+          <button
+            key={language.id}
+            className={cn(
+              "p-2.5 rounded-md text-sm font-medium transition-all duration-200 ease-in-out",
+              "hover:scale-105 focus:outline-none focus:ring-2 focus:ring-white/20",
+              "flex items-center justify-center border backdrop-blur-sm",
+              selectedLanguage.id === language.id
+                ? "border-white/30 bg-white/10 shadow-lg"
+                : "border-white/5 bg-white/5 hover:bg-white/10"
+            )}
+            onClick={() => onSelectLanguage(language)}
+            style={{ animationDelay: `${index * 50}ms` }}
+          >
+            {getLanguageIcon(language.id)}
+            <span className="text-white/90 ml-2">{language.name}</span>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+export default LanguageSelector;
